@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyterlab
+  namespace: gpu-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jupyterlab
+  template:
+    metadata:
+      labels:
+        app: jupyterlab
+    spec:
+      containers:
+        - name: jupyterlab
+          image: pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - -lc
+            - |
+              pip install --no-cache-dir jupyterlab && \
+              jupyter lab \
+                --allow-root \
+                --ip=0.0.0.0 \
+                --port=8888 \
+                --no-browser \
+                --NotebookApp.token=gpu-lab-token \
+                --NotebookApp.password=''
+          ports:
+            - containerPort: 8888
+              name: http
+          resources:
+            limits:
+              cpu: "4"
+              memory: 16Gi
+              nvidia.com/gpu: "1"
+            requests:
+              cpu: "2"
+              memory: 8Gi
+              nvidia.com/gpu: "1"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jupyterlab
+  namespace: gpu-lab
+spec:
+  selector:
+    app: jupyterlab
+  ports:
+    - name: http
+      port: 8888
+      targetPort: 8888
+
