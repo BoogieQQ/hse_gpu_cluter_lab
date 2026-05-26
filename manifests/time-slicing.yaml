@@ -8,7 +8,7 @@ data:
     version: v1
     sharing:
       timeSlicing:
-        renameByDefault: true
+        renameByDefault: false
         failRequestsGreaterThanOne: true
         resources:
           - name: nvidia.com/gpu
